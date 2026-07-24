@@ -25,6 +25,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 #include <dlfcn.h>
 
 #include "acl/acl.h"
+#include "pto/comm/async_common/async_types.hpp"
 
 #ifndef ACL_STREAM_DEVICE_USE_ONLY
 #define ACL_STREAM_DEVICE_USE_ONLY 0x00000020U
@@ -58,8 +59,7 @@ namespace sdma {
 
 namespace detail {
 
-constexpr uint32_t kSdmaMaxChan = 48;
-constexpr size_t kSdmaWorkspaceBytes = 16 * 1024;
+constexpr uint32_t kSdmaMaxChan = kSdmaMaxChannelGroups;
 
 struct HostStreamInfo {
     uint64_t stream_;
@@ -109,7 +109,7 @@ public:
             return false;
         if (!CreateStarsStreams(detail::kSdmaMaxChan))
             return false;
-        if (!MallocWorkspace(detail::kSdmaWorkspaceBytes))
+        if (!MallocWorkspace(kSdmaWorkspaceBytes))
             return false;
         if (!CopyOpResToDevice())
             return false;

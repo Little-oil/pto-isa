@@ -132,9 +132,24 @@ struct UrmaSession {
 // ============================================================================
 struct AsyncSession {
     DmaEngine engine{DmaEngine::SDMA};
-    sdma::SdmaSession sdmaSession{};
-    urma::UrmaSession urmaSession{};
     bool valid{false};
+
+    __gm__ uint8_t* contextGm{nullptr};
+    __ubuf__ uint8_t* tmpBufAddr{nullptr};
+    uint32_t tmpBufSize{0};
+    uint32_t syncId{0};
+    uint32_t channelGroupIdx{sdma::kAutoChannelGroupIdx};
+    uint64_t blockBytes{sdma::kDefaultSdmaBlockBytes};
+    uint64_t commBlockOffset{0};
+    uint32_t queueNum{1};
+
+    // Persistent SDMA runtime state. The SDMA backend threads this across
+    // successive posts/waits, so it lives in the session and is mutated even
+    // through const references (mirrors sdma::SdmaSession::runtimeCtx).
+    mutable sdma::detail::SdmaRuntimeContext sdmaRuntimeCtx{};
+
+    uint32_t destRankId{0};
+    uint32_t qpIdx{0};
 };
 
 } // namespace comm

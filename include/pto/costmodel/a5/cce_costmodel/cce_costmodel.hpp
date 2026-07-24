@@ -7,17 +7,7 @@ THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, E
 INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
 See LICENSE in the root of the software repository for the full text of the License.
 */
-#ifndef PTO_MOCKER_COMMON_ARCH_SELECT_HPP
-#define PTO_MOCKER_COMMON_ARCH_SELECT_HPP
+#pragma once
 
-#if !defined(__NPU_ARCH__)
-#error "__NPU_ARCH__ must be defined for PTO costmodel."
-#elif (__NPU_ARCH__ == 2201)
-#include <pto/costmodel/a2a3/cce_costmodel.hpp>
-#elif (__NPU_ARCH__ == 3101) || (__NPU_ARCH__ == 3510)
-#include <pto/costmodel/a5/cce_costmodel/cce_costmodel.hpp>
-#else
-#error "PTO costmodel only supports __NPU_ARCH__ == 2201 (A2/A3) or 3101/3510 (A5)."
-#endif
-
-#endif
+#include "a5_vf_stub.hpp"
+#include "vf_cost.hpp"

@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Huawei Technologies Co., Ltd.
+Copyright (c) 2026 Huawei Technologies Co., Ltd.
 This program is free software, you can redistribute it and/or modify it under the terms and conditions of
 CANN Open Software License Agreement Version 2.0 (the "License").
 Please refer to the License for details. You may not use this file except in compliance with the License.
@@ -7,7 +7,6 @@ THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, E
 INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
 See LICENSE in the root of the software repository for the full text of the License.
 */
-
 #ifndef __UIILS_HPP__
 #define __UIILS_HPP__
 
@@ -41,6 +40,10 @@ PTO_INTERNAL void SetContinuousMask(unsigned n)
 template <int index>
 PTO_INTERNAL void movemask(uint64_t mask)
 {
+#if defined(__COSTMODEL)
+    (void)mask;
+    PTO_STATIC_ASSERT((index <= 1), "movemask: error mask index.");
+#else
     if constexpr (index == 0) {
         asm volatile("MOVEMASK 	MASK[0],  %0\n" ::"l"(mask));
     } else if constexpr (index == 1) {
@@ -48,6 +51,7 @@ PTO_INTERNAL void movemask(uint64_t mask)
     } else {
         PTO_STATIC_ASSERT((index <= 1), "movemask: error mask index.");
     }
+#endif
 }
 
 PTO_INTERNAL void SetVectorCount(uint64_t n) { set_vector_mask(0, n); }
@@ -100,7 +104,6 @@ struct B82B16Trait {
     PTO_INTERNAL static uint64_t TransSize(uint64_t size)
     {
         if constexpr (isB8) {
-            // UB是32B对齐，这是安全的
             return (size + sizeof(TransType) - 1) / sizeof(TransType);
         } else {
             return size;

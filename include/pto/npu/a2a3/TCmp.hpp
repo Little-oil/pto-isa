@@ -36,9 +36,13 @@ AICORE void CmpCall(
                     srcrepeatstride, srcrepeatstride);
                 break;
             case CmpMode::NE:
-                vcmpv_ne(
+                vcmpv_eq(
                     dst, src0, src1, repeat, dstblockstride, srcblockstride, srcblockstride, dstrepeatstride,
                     srcrepeatstride, srcrepeatstride);
+                pipe_barrier(PIPE_V);
+                vnot(
+                    (__ubuf__ unsigned short*)dst, (__ubuf__ unsigned short*)dst, repeat, dstblockstride,
+                    dstblockstride, dstrepeatstride, dstrepeatstride);
                 break;
             case CmpMode::LT:
                 vcmpv_lt(

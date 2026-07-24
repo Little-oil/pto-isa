@@ -72,3 +72,4 @@ template void LaunchTCmp<int32_t, 77, 81, 32, 32, CmpMode::EQ>(
     uint8_t* out, int32_t* src0, int32_t* src1, void* stream);
 template void LaunchTCmp<int32_t, 32, 32, 32, 32, CmpMode::EQ>(
     uint8_t* out, int32_t* src0, int32_t* src1, void* stream);
+template void LaunchTCmp<float, 32, 32, 32, 32, CmpMode::NE>(uint8_t* out, float* src0, float* src1, void* stream);

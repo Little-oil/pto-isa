@@ -26,7 +26,9 @@ AICORE void vcmp_dispatch(
 {
     switch (mode) {
         case CmpMode::NE:
-            vcmpvs_ne(dst, src0, scalar, rep, b_dst, b_src, r_dst, r_src);
+            vcmpvs_eq(dst, src0, scalar, rep, b_dst, b_src, r_dst, r_src);
+            pipe_barrier(PIPE_V);
+            vnot((__ubuf__ unsigned short*)dst, (__ubuf__ unsigned short*)dst, rep, b_dst, b_dst, r_dst, r_dst);
             break;
         case CmpMode::LT:
             vcmpvs_lt(dst, src0, scalar, rep, b_dst, b_src, r_dst, r_src);

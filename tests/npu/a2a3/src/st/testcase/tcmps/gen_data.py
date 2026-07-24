@@ -28,6 +28,10 @@ def gen_golden_data_tcmps(case_name, param):
         input1 = np.random.randint(1, 10, size=[H, W]).astype(dtype)
         input2 = np.random.randint(1, 10, size=[1]).astype(dtype)
 
+    if getattr(param, "is_nan", False):
+        input1[:] = np.nan
+        input2[:] = np.nan
+
     if param.mode == "CmpMode::EQ":
         golden = np.equal(input1, input2[0])
     if param.mode == "CmpMode::NE":
@@ -64,7 +68,7 @@ def gen_golden_data_tcmps(case_name, param):
     return output, input1, input2, golden
 
 class tcmpsParams:
-    def __init__(self, dtype, global_row, global_col, tile_row, tile_col, valid_row, valid_col, cmpMode):
+    def __init__(self, dtype, global_row, global_col, tile_row, tile_col, valid_row, valid_col, cmp_mode, is_nan=False):
         self.dtype = dtype
         self.global_row = global_row
         self.global_col = global_col
@@ -72,7 +76,8 @@ class tcmpsParams:
         self.tile_col = tile_col
         self.valid_row = valid_row
         self.valid_col = valid_col
-        self.mode = cmpMode
+        self.mode = cmp_mode
+        self.is_nan = is_nan
 
 def generate_case_name(param):
     dtype_str = {
@@ -81,7 +86,9 @@ def generate_case_name(param):
         np.int32: 'int32',
         np.int16: 'int16'
     }[param.dtype]
-    return f"TCMPSTest.case_{dtype_str}_{param.global_row}x{param.global_col}_{param.tile_row}x{param.tile_col}_{param.valid_row}x{param.valid_col}"
+    nan_suffix = "_nan" if getattr(param, "is_nan", False) else ""
+    return f"TCMPSTest.case_{dtype_str}_{param.global_row}x{param.global_col}_{param.tile_row}x{param.tile_col}_"\
+        f"{param.valid_row}x{param.valid_col}{nan_suffix}"
 
 if __name__ == "__main__":
     # Get the absolute path of the script
@@ -103,6 +110,7 @@ if __name__ == "__main__":
         tcmpsParams(np.float32, 128, 128, 128, 128, 128, 128, "CmpMode::LE"),
         tcmpsParams(np.int32, 77, 81, 32, 32, 77, 81, "CmpMode::EQ"),
         tcmpsParams(np.int32, 32, 32, 32, 32, 32, 32, "CmpMode::EQ"),
+        tcmpsParams(np.float32, 32, 32, 32, 32, 32, 32, "CmpMode::NE", is_nan=True),
     ]
 
     for i, param in enumerate(case_params_list):

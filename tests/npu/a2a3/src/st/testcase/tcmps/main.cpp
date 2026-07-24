@@ -105,3 +105,4 @@ TEST_F(TCMPSTest, case_int32_16x32_16x32_16x32) { test_tcmps<int32_t, 16, 32, 16
 TEST_F(TCMPSTest, case_float_128x128_128x128_128x128) { test_tcmps<float, 128, 128, 128, 128, 3>(); }
 TEST_F(TCMPSTest, case_int32_77x81_32x32_77x81) { test_tcmps<int32_t, 77, 81, 32, 32, 0>(); }
 TEST_F(TCMPSTest, case_int32_32x32_32x32_32x32) { test_tcmps<int32_t, 32, 32, 32, 32, 0>(); }
+TEST_F(TCMPSTest, case_float_32x32_32x32_32x32_nan) { test_tcmps<float, 32, 32, 32, 32, 1>(); }

@@ -72,3 +72,4 @@ template void LaunchTCmps<int32_t, 16, 32, 16, 32, 0>(uint8_t* out, int32_t* src
 template void LaunchTCmps<float, 128, 128, 128, 128, 3>(uint8_t* out, float* src0, float* src1, void* stream);
 template void LaunchTCmps<int32_t, 77, 81, 32, 32, 0>(uint8_t* out, int32_t* src0, int32_t* src1, void* stream);
 template void LaunchTCmps<int32_t, 32, 32, 32, 32, 0>(uint8_t* out, int32_t* src0, int32_t* src1, void* stream);
+template void LaunchTCmps<float, 32, 32, 32, 32, 1>(uint8_t* out, float* src0, float* src1, void* stream);

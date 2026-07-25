@@ -157,7 +157,7 @@ PTO_INST RecordEvent TMOV(DstTileData &dst, SrcTileData &src, TmpTileData &tmp, 
     - 源行数必须为 `1`
     - `SrcTileData::Cols * sizeof(SrcType)` 必须64字节对齐
 - 对于 `TileType::Mat -> TileType::Scaling`：
-    - 目标dtype须等于源dtype且为 `uint64_t`
+    - 目标dtype须等于源dtype且为 `uint64_t` 或 `int64_t`
     - 源行数必须为 `1`
     - `SrcTileData::Cols * sizeof(SrcType)` 必须128字节对齐
 - 对于 `TileType::Acc -> TileType::Mat`：

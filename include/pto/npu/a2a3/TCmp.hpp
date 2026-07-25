@@ -115,6 +115,9 @@ PTO_INTERNAL void TCMP_IMPL(TileDataDst& dst, TileDataSrc0& src0, TileDataSrc1& 
     using T = typename TileDataSrc0::DType;
     static_assert(std::is_same_v<T, typename TileDataSrc1::DType>, "TCMP: src0 and src1 must have same type");
     static_assert(
+        std::is_same_v<T, int32_t> || std::is_same_v<T, half> || std::is_same_v<T, float>,
+        "TCMP: input data type must be one of int32_t, half, float.");
+    static_assert(
         TileDataSrc0::Loc == TileType::Vec && TileDataSrc1::Loc == TileType::Vec,
         "TileType of src tiles must be TileType::Vec.");
     static_assert(TileDataDst::Loc == TileType::Vec, "TileType of dst tiles must be TileType::Vec.");

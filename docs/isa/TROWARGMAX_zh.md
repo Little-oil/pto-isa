@@ -62,7 +62,7 @@ PTO_INST RecordEvent TROWARGMAX(TileDataOutVal &dstVal, TileDataOutIdx &dstIdx, 
 
 ### 通用约束或检查
 
-- 支持的源元素类型：`half`、`float`。
+- 支持的源元素类型：`half`、`float`、`int32_t`、`int16_t`（A2A3）。A5 接受任意 2/4 字节源（`half`、`bfloat16_t`、`int16_t`、`uint16_t`、`float`、`int32_t`、`uint32_t`）。
 - `src` 必须使用标准ND布局：行主且非分形（`BLayout::RowMajor`、`SLayout::NoneBox`）。
 - 仅输出索引时：
     - `dst` 和 `src` 必须为 `TileType::Vec`。

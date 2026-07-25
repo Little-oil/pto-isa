@@ -61,6 +61,10 @@ PTO_INST RecordEvent TROWPROD(TileDataOut &dst, TileDataIn &src, TileDataTmp &tm
     - `src.GetValidRow() == dst.GetValidRow()`
 - 内建接口签名要求显式传入 `tmp` 操作数。
 
+### Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品实现检查
+
+- 支持的元素类型：`half`、`float`、`int32_t`、`int16_t`。
+
 ### Ascend 950PR/Ascend 950DT实现检查
 
 - 支持的元素类型：`half`、`float`、`int32_t`、`int16_t`。

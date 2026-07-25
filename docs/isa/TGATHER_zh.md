@@ -101,7 +101,7 @@ PTO_INST RecordEvent TGATHER(TileDataD &dst, TileDataS &src0, TileDataS1 &k_valu
     - `src1.GetValidCol() == TmpTileData::Cols` 且 `src1.GetValidRow() == TmpTileData::Rows`。
     - `dst.GetValidCol() == DstTileData::Cols`（连续的目标存储）。
 - **基于索引的gather：实现检查 (Ascend 950PR/Ascend 950DT)**:
-    - `DstTileData::DType` 必须是 `int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`half`、`float` 之一。
+    - `DstTileData::DType` 必须为 1、2 或 4 字节类型：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`half`、`bfloat16_t`、`float` 之一。
     - `sizeof(Src1TileData::DType)` 对应类型必须是 `int16_t`、`uint16_t`、`int32_t`、`uint32_t` 之一。
     - `DstTileData::DType` 必须与 `Src0TileData::DType` 类型相同。
     - `src1.GetValidCol() == Src1TileData::Cols` 且 `dst.GetValidCol() == DstTileData::Cols`。

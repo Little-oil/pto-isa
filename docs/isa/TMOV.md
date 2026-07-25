@@ -169,7 +169,7 @@ PTO_INST RecordEvent TMOV(DstTileData &dst, SrcTileData &src, TmpTileData &tmp, 
     - source row must be `1`
     - `SrcTileData::Cols * sizeof(SrcType)` must be aligned to `64` bytes
 - For `TileType::Mat -> TileType::Scaling`:
-    - destination dtype must equal source dtype and must be `uint64_t`
+    - destination dtype must equal source dtype and must be `uint64_t` or `int64_t`
     - source row must be `1`
     - `SrcTileData::Cols * sizeof(SrcType)` must be aligned to `128` bytes
 - For `TileType::Acc -> TileType::Mat`:

@@ -246,27 +246,30 @@ struct TPipe {
 
         template <typename TileProd, typename TConfig>
         using FixpipeGlobalData = GlobalTensor<
-            FixpipeConsType<TileProd, TConfig>, pto::Shape<1, 1, 1, TileProd::Rows, TileProd::Cols>,
-            pto::Stride<1, 1, 1, TileProd::Cols, 1>, FixpipeGlobalLayout<TConfig::LayoutMode>>;
+            FixpipeConsType<TileProd, TConfig>, pto::Shape<1, 1, 1, -1, -1>, pto::Stride<1, 1, 1, -1, 1>,
+            FixpipeGlobalLayout<TConfig::LayoutMode>>;
 
         template <typename TileProd, typename TConfig>
         PTO_INTERNAL void pushAcc2GMFiFo(RingFiFo& fifo, TileProd& tile)
         {
             using T = FixpipeConsType<TileProd, TConfig>;
             using GlobalData = FixpipeGlobalData<TileProd, TConfig>;
+            using GlobalShape = pto::Shape<1, 1, 1, -1, -1>;
+            using GlobalStride = pto::Stride<1, 1, 1, -1, 1>;
             size_t entryBase = (tileIndex % RingFiFo::SLOT_NUM) * RingFiFo::SLOT_SIZE;
-            GlobalData globalTensor((__gm__ T*)((uint64_t)fifo.GM_SLOT_BUFFER + entryBase + entryOffset));
+            __gm__ T* addr = (__gm__ T*)((uint64_t)fifo.GM_SLOT_BUFFER + entryBase + entryOffset);
+            GlobalData gmT(addr, GlobalShape(tile.GetValidRow(), tile.GetValidCol()), GlobalStride(tile.GetValidCol()));
 
             if constexpr (TConfig::AtomicT == AtomicType::AtomicAdd) {
                 SetAtomicAdd<typename GlobalData::DType>();
             }
             TStoreAcc<GlobalData, TileProd, TConfig::QuantPre, TConfig::ReluMode, TConfig::Phase>(
-                globalTensor.data(), tile.data(), globalTensor.GetShape(GlobalTensorDim::DIM_0),
-                globalTensor.GetShape(GlobalTensorDim::DIM_1), globalTensor.GetShape(GlobalTensorDim::DIM_2),
-                globalTensor.GetShape(GlobalTensorDim::DIM_3), globalTensor.GetShape(GlobalTensorDim::DIM_4),
-                globalTensor.GetStride(GlobalTensorDim::DIM_0), globalTensor.GetStride(GlobalTensorDim::DIM_1),
-                globalTensor.GetStride(GlobalTensorDim::DIM_2), globalTensor.GetStride(GlobalTensorDim::DIM_3),
-                globalTensor.GetStride(GlobalTensorDim::DIM_4), tile.GetValidRow(), tile.GetValidCol());
+                gmT.data(), tile.data(), gmT.GetShape(GlobalTensorDim::DIM_0), gmT.GetShape(GlobalTensorDim::DIM_1),
+                gmT.GetShape(GlobalTensorDim::DIM_2), gmT.GetShape(GlobalTensorDim::DIM_3),
+                gmT.GetShape(GlobalTensorDim::DIM_4), gmT.GetStride(GlobalTensorDim::DIM_0),
+                gmT.GetStride(GlobalTensorDim::DIM_1), gmT.GetStride(GlobalTensorDim::DIM_2),
+                gmT.GetStride(GlobalTensorDim::DIM_3), gmT.GetStride(GlobalTensorDim::DIM_4), tile.GetValidRow(),
+                tile.GetValidCol());
             if constexpr (TConfig::AtomicT == AtomicType::AtomicAdd) {
                 SetAtomicNone();
             }

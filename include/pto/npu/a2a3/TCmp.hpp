@@ -31,18 +31,10 @@ AICORE void CmpCall(
     } else {
         switch (static_cast<CmpMode>(cmpMode)) {
             case CmpMode::EQ:
-                vcmpv_eq(
-                    dst, src0, src1, repeat, dstblockstride, srcblockstride, srcblockstride, dstrepeatstride,
-                    srcrepeatstride, srcrepeatstride);
-                break;
             case CmpMode::NE:
                 vcmpv_eq(
                     dst, src0, src1, repeat, dstblockstride, srcblockstride, srcblockstride, dstrepeatstride,
                     srcrepeatstride, srcrepeatstride);
-                pipe_barrier(PIPE_V);
-                vnot(
-                    (__ubuf__ unsigned short*)dst, (__ubuf__ unsigned short*)dst, repeat, dstblockstride,
-                    dstblockstride, dstrepeatstride, dstrepeatstride);
                 break;
             case CmpMode::LT:
                 vcmpv_lt(
@@ -106,6 +98,16 @@ __tf__ AICORE void TCmp(
                 dstPtr + i * dstAlignCols + numLoop * dstOffset, src0Ptr + i * src0AlignCols + numLoop * srcOffset,
                 src1Ptr + i * src1AlignCols + numLoop * srcOffset, mode, numRemainPerLine, 1, 1, 8, 8);
         }
+    }
+    if (mode == CmpMode::NE) {
+        pipe_barrier(PIPE_V);
+        set_mask_count();
+        SetVectorCount(validRow * dstAlignCols / sizeof(unsigned short));
+        vnot(
+            (__ubuf__ unsigned short*)dstPtr, (__ubuf__ unsigned short*)dstPtr, 0, 1, 1, BLOCK_MAX_PER_REPEAT,
+            BLOCK_MAX_PER_REPEAT);
+        set_mask_norm();
+        set_vector_mask(-1, -1);
     }
 }
 

@@ -101,8 +101,14 @@ inline T ReLU(T val)
     return (val > 0) ? val : 0;
 }
 
+template <bool is_vector_quant>
 inline float extract_m1_from_quant(uint64_t quant)
 {
+    if constexpr (!is_vector_quant) {
+        uint32_t scale_bits = static_cast<uint32_t>(quant & 0xFFFFFFFF);
+        float* scale = reinterpret_cast<float*>(&scale_bits);
+        return *scale;
+    }
     uint32_t m1_bits = static_cast<uint32_t>((quant >> 13) & 0x7FFFF);
     uint32_t sign_bit = (m1_bits >> 18) & 0x1;
     uint32_t exponent = (m1_bits >> 10) & 0xFF;
@@ -121,7 +127,7 @@ inline float extract_m1_from_quant(uint64_t quant)
 template <typename DstType, typename SrcType, QuantMode_t mode, bool use_relu>
 DstType quantize_element(SrcType src_val, uint64_t scalar)
 {
-    float f_scale = extract_m1_from_quant(scalar);
+    float f_scale = extract_m1_from_quant<is_vector_quant_v<mode>>(scalar);
     uint64_t ctrl_bits = get_task_cookie();
     uint32_t offset = static_cast<uint32_t>((scalar >> 37) & 0x1FF);
     uint32_t sign = static_cast<uint32_t>((scalar >> 46) & 0x1);

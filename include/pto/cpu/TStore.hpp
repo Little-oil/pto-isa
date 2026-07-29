@@ -78,6 +78,51 @@ PTO_INTERNAL void TStore6HD(
 }
 
 template <typename GlobalData, typename TileData, QuantMode_t quantMode, bool applyRelu>
+__tf__ PTO_INLINE void TStoreAcc(GlobalData& dst, TileData& src, const std::vector<uint64_t>& scalars)
+{
+    const size_t validRow = src.GetValidRow();
+    const size_t validCol = src.GetValidCol();
+
+    const size_t shape_0 = dst.GetShape(GlobalTensorDim::DIM_0);
+    const size_t shape_1 = dst.GetShape(GlobalTensorDim::DIM_1);
+    const size_t shape_2 = dst.GetShape(GlobalTensorDim::DIM_2);
+    const size_t shape_3 = dst.GetShape(GlobalTensorDim::DIM_3);
+    const size_t shape_4 = dst.GetShape(GlobalTensorDim::DIM_4);
+
+    const size_t stride_0 = dst.GetStride(GlobalTensorDim::DIM_0);
+    const size_t stride_1 = dst.GetStride(GlobalTensorDim::DIM_1);
+    const size_t stride_2 = dst.GetStride(GlobalTensorDim::DIM_2);
+    const size_t stride_3 = dst.GetStride(GlobalTensorDim::DIM_3);
+    const size_t stride_4 = dst.GetStride(GlobalTensorDim::DIM_4);
+
+    uint64_t scalar = 0;
+    for (int s0 = 0; s0 < shape_0; ++s0) {
+        for (int s2 = 0; s2 < shape_2; ++s2) {
+            for (int s3 = 0; s3 < shape_3; ++s3) {
+                size_t row = s0 * shape_2 * shape_3 + s2 * shape_3 + s3;
+                for (int s1 = 0; s1 < shape_1; ++s1) {
+                    for (int s4 = 0; s4 < shape_4; ++s4) {
+                        typename TileData::DType val;
+                        size_t col = s1 * shape_4 + s4;
+                        if (row < validRow && col < validCol) {
+                            if constexpr (quantMode != QuantMode_t::NoQuant) {
+                                scalar = scalars[TileData::isRowMajor ? col : row];
+                            }
+                            val = src.GetElement(row, col);
+                        }
+                        dst.SetElement(
+                            s0, s1, s2, s3, s4,
+                            ConvertStoreValue<
+                                typename GlobalData::DType, typename TileData::DType, quantMode, applyRelu>(
+                                val, scalar));
+                    }
+                }
+            }
+        }
+    }
+}
+
+template <typename GlobalData, typename TileData, QuantMode_t quantMode, bool applyRelu>
 __tf__ PTO_INLINE void StorePlainGT(GlobalData& dst, TileData& src, const std::vector<uint64_t>& scalars)
 {
     uint64_t scalar = 0;
@@ -149,6 +194,8 @@ __tf__ PTO_INLINE void TStore(GlobalData& dst, TileData& src, const std::vector<
                 StoreElement<D, S, TileData, quantMode, applyRelu>(
                     dst.data(), gd_idx, src.data()[tile_idx], r, c, scalars);
             });
+    } else if (TileData::Loc == TileType::Acc) {
+        TStoreAcc<GlobalData, TileData, quantMode, applyRelu>(dst, src, scalars);
     } else {
         StorePlainGT<GlobalData, TileData, quantMode, applyRelu>(dst, src, scalars);
     }
@@ -159,8 +206,9 @@ PTO_INTERNAL void TSTORE_IMPL(GlobalData& dst, TileData& src, const std::vector<
 {
     static_assert(
         GlobalData::layout == pto::Layout::ND || GlobalData::layout == pto::Layout::DN ||
-            GlobalData::layout == pto::Layout::NZ || GlobalData::layout == pto::Layout::NDC1HWC0,
-        "Only ND, DN, NZ and NDC1HWC0 GLobal Tensors are currently supported");
+            GlobalData::layout == pto::Layout::NZ || GlobalData::layout == pto::Layout::NDC1HWC0 ||
+            GlobalData::layout == pto::Layout::NC1HWC0,
+        "Only ND, DN, NZ, NC1HWC0 and NDC1HWC0 GLobal Tensors are currently supported");
     if constexpr (GlobalData::layout == pto::Layout::NDC1HWC0 && is_conv_tile_v<TileData>) {
         TStore6HD<TileData, GlobalData>(
             dst.data(), src.data(), dst.GetShape(0), dst.GetShape(1), dst.GetShape(2), dst.GetShape(3), dst.GetShape(4),
@@ -212,7 +260,7 @@ template <
 __aicore__ void TSTORE_IMPL(GlobalData& dst, TileData& src, FpTileData& fp)
 {
     (void)Phase;
-    constexpr QuantMode_t quantPre = GetScalarPreQuantMode<typename TileData::DType, typename GlobalData::DType>();
+    constexpr QuantMode_t quantPre = GetVectorPreQuantMode<typename TileData::DType, typename GlobalData::DType>();
     constexpr bool useRelu = reluPreMode == ReluPreMode::NormalRelu;
 
     std::vector<uint64_t> scalars(fp.GetValidCol(), 0);

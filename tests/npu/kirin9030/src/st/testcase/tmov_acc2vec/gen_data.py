@@ -111,6 +111,19 @@ def get_vector_quant(golden, m, n, dst_type, quant_type):
     return quant_golden
 
 
+def get_golden_nd_to_nz(golden, m, n, dst_type, s_fractal_size):
+    if dst_type == np.float32 and s_fractal_size == 512:
+        block_cols = 8
+    elif dst_type == np.int8 and s_fractal_size == 512:
+        block_cols = 32
+    else:
+        block_cols = 16
+    assert (m % 16) == 0, "M should be 16 aligned when matrix C is NZ format"
+    assert (n % block_cols) == 0, "N should be aligned when matrix C is NZ format"
+    golden = golden.reshape((int(m / 16), 16, int(n / block_cols), block_cols)).transpose(2, 0, 1, 3).astype(dst_type)
+    return golden
+
+
 def gen_golden_data(case_name, param):
     a_type, b_type, c_type, dst_type = param.atype, param.btype, param.ctype, param.dst_type
     m, k, n = param.m, param.k, param.n
@@ -150,13 +163,9 @@ def gen_golden_data(case_name, param):
     if param.is_relu:
         golden = np.maximum(golden, 0)
 
-    dst_data = np.zeros((param.dst_row, param.dst_col), dtype=dst_type)
-    dst_data.astype(dst_type).tofile("./dst.bin")
-    if param.dst_col != 0 and param.dst_row != 0:
-        dst_data[:(m - param.index_rows), :(n - param.index_cols)] = golden[param.index_rows:, param.index_cols:]
-        dst_data.astype(dst_type).tofile("./golden.bin")
-    else:
-        golden.astype(dst_type).tofile("./golden.bin")
+    if dst_format == "NZ":
+        golden = get_golden_nd_to_nz(golden, base_m, base_n, dst_type, s_fractal_size)
+    golden.astype(dst_type).tofile("./golden.bin")
 
 
 class TMovParams:
@@ -178,11 +187,6 @@ class TMovParams:
         is_relu=False,
         quant_type=None,
         scalar=1,
-        index_rows=0,
-        index_cols=0,
-        is_insert=False,
-        dst_row=0,
-        dst_col=0,
     ):
         self.atype = atype
         self.btype = btype
@@ -207,11 +211,6 @@ class TMovParams:
             self.quant_type = quant_type
         if is_s_quant:
             self.scalar = scalar
-        self.index_rows = index_rows
-        self.index_cols = index_cols
-        self.is_insert = is_insert
-        self.dst_row = dst_row
-        self.dst_col = dst_col
 
 
 if __name__ == "__main__":
@@ -221,6 +220,19 @@ if __name__ == "__main__":
         "TMOVTest.case_nz2nd_2",
         "TMOVTest.case_nz2nd_3",
         "TMOVTest.case_nz2nd_4",
+        "TMOVTest.case_nz2nz_1",
+        "TMOVTest.case_nz2nz_2",
+        "TMOVTest.case_nz2nz_3",
+        "TMOVTest.case_nz2nz_4",
+        # Quant pre
+        "TMOVTest.case_nz2nz_fb_quant_1",
+        "TMOVTest.case_nz2nz_fb_quant_2",
+        "TMOVTest.case_nz2nz_fb_quant_3",
+        "TMOVTest.case_nz2nz_fb_quant_4",
+        "TMOVTest.case_nz2nz_sc_quant_1",
+        "TMOVTest.case_nz2nz_sc_quant_2",
+        "TMOVTest.case_nz2nz_sc_quant_3",
+        "TMOVTest.case_nz2nz_sc_quant_4",
         "TMOVTest.case_nz2nd_fb_quant_1",
         "TMOVTest.case_nz2nd_fb_quant_2",
         "TMOVTest.case_nz2nd_fb_quant_3",
@@ -233,58 +245,38 @@ if __name__ == "__main__":
     ]
 
     case_params_list = [
-        TMovParams(
-            np.float16, np.float16, np.float16, 60, 127, 120, 0, 0, 0, "ND", 512, False, False, True, None, 1,
-            0, 16, False, 64, 128,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.float16, 110, 100, 80, 0, 0, 0, "ND", 512, False, False, True, None, 1,
-            5, 0, False, 120, 96,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.float16, 6, 7, 8, 0, 0, 0, "ND", 512, False, False, True, None, 1,
-            2, 0, False, 10, 16,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.float16, 111, 47, 96, 0, 0, 0, "ND", 512, False, False, True, None, 1,
-            3, 32, False, 150, 160,
-        ),
-        TMovParams(
-            np.int8, np.int8, np.int8, 30, 48, 64, 0, 0, 0, "ND", 512, True, False, False, np.uint64, 1,
-            0, 32, False, 40, 96,
-        ),
-        TMovParams(
-            np.int8, np.int8, np.float16, 60, 128, 32, 0, 0, 0, "ND", 512, True, False, False, np.uint64, 1,
-            5, 0, False, 70, 96,
-        ),
-        TMovParams(
-            np.int8, np.int8, np.float16, 128, 64, 96, 0, 0, 0, "ND", 512, True, False, False, np.uint64, 1,
-            0, 0, False, 128, 96,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.int8, 60, 128, 64, 0, 0, 0, "ND", 512, True, False, True, np.uint64, 1,
-            7, 32, False, 80, 256,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.int16, 31, 128, 128, 0, 0, 0, "ND", 512, True, False, True, np.uint64, 1,
-            0, 64, False, 40, 256,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.int16, 128, 48, 96, 0, 0, 0, "ND", 512, False, True, True, None, 2,
-            0, 0, False, 128, 96,
-        ),
-        TMovParams(
-            np.float16, np.float16, np.int8, 60, 128, 64, 0, 0, 0, "ND", 512, False, True, True, None, 5,
-            0, 32, False, 128, 128,
-        ),
-        TMovParams(
-            np.int8, np.int8, np.float16, 30, 48, 64, 0, 0, 0, "ND", 512, False, True, False, None, 3,
-            5, 32, False, 40, 128,
-        ),
-        TMovParams(
-            np.int8, np.int8, np.int8, 60, 128, 32, 0, 0, 0, "ND", 512, False, True, False, None, 1,
-            3, 0, False, 64, 64,
-        ),
+        # nz2nd - kirin9030: float->half
+        TMovParams(np.float16, np.float16, np.float16, 60, 127, 120, 0, 0, 0, "ND", 512, False, False, True),
+        TMovParams(np.float16, np.float16, np.float16, 110, 100, 80, 0, 0, 0, "ND", 512, False, False, True),
+        TMovParams(np.float16, np.float16, np.float16, 6, 7, 8),
+        TMovParams(np.float16, np.float16, np.float16, 111, 47, 96),
+        # nz2nz - kirin9030: float->half, sfractalSize 1024->512
+        TMovParams(np.float16, np.float16, np.float16, 96, 80, 112, 0, 0, 0, "NZ"),
+        TMovParams(np.float16, np.float16, np.float16, 80, 112, 96, 0, 0, 0, "NZ", 512),
+        TMovParams(np.float16, np.float16, np.float16, 13, 16, 9, 16, 16, 16, "NZ", 512, False, False, True),
+        TMovParams(np.float16, np.float16, np.float16, 45, 112, 43, 48, 112, 48, "NZ", 512, False, False, True),
+        # nz2nz fb quant
+        TMovParams(np.int8, np.int8, np.int8, 128, 48, 128, 0, 0, 0, "NZ", 512, True, False, False, np.uint64),
+        TMovParams(np.int8, np.int8, np.float16, 64, 80, 96, 0, 0, 0, "NZ", 512, True, False, False, np.uint64),
+        TMovParams(np.int8, np.int8, np.int8, 128, 32, 96, 0, 0, 0, "NZ", 512, True, False, True, np.uint64),
+        # kirin9030: use int8_t to match a5 behavior, pad M/K to 32-aligned (baseM=96, baseK=32)
+        TMovParams(np.int8, np.int8, np.int8, 80, 16, 128, 96, 32, 0, "NZ", 512, True, False, True, np.uint64),
+        # nz2nz sc quant - kirin9030: use int16_t as output to enable quantization
+        TMovParams(np.float16, np.float16, np.int16, 48, 32, 80, 0, 0, 0, "NZ", 512, False, True, True, None, 2),
+        TMovParams(np.int8, np.int8, np.float16, 96, 48, 128, 0, 0, 0, "NZ", 512, False, True, True, None, 4),
+        TMovParams(np.int8, np.int8, np.int8, 125, 64, 124, 128, 64, 128, "NZ", 512, False, True, False, None, 5),
+        TMovParams(np.float16, np.float16, np.int8, 61, 80, 93, 64, 80, 96, "NZ", 512, False, True, False, None, 7),
+        # nz2nd fb quant
+        TMovParams(np.int8, np.int8, np.int8, 30, 48, 64, 0, 0, 0, "ND", 512, True, False, False, np.uint64),
+        TMovParams(np.int8, np.int8, np.float16, 60, 128, 32, 0, 0, 0, "ND", 512, True, False, False, np.uint64),
+        TMovParams(np.int8, np.int8, np.float16, 128, 64, 96, 0, 0, 0, "ND", 512, True, False, False, np.uint64),
+        TMovParams(np.float16, np.float16, np.int8, 60, 128, 64, 0, 0, 0, "ND", 512, True, False, True, np.uint64),
+        TMovParams(np.float16, np.float16, np.int16, 31, 128, 128, 0, 0, 0, "ND", 512, True, False, True, np.uint64),
+        # nz2nd sc quant - kirin9030: float->half
+        TMovParams(np.float16, np.float16, np.int16, 128, 48, 96, 0, 0, 0, "ND", 512, False, True, True, None, 2),
+        TMovParams(np.float16, np.float16, np.int8, 60, 128, 64, 0, 0, 0, "ND", 512, False, True, True, None, 5),
+        TMovParams(np.int8, np.int8, np.float16, 30, 48, 64, 0, 0, 0, "ND", 512, False, True, False, None, 3),
+        TMovParams(np.int8, np.int8, np.int8, 60, 128, 32, 0, 0, 0, "ND", 512, False, True, False, None, 1),
     ]
 
     for i, case_name in enumerate(case_name_list):

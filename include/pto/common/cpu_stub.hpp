@@ -16,6 +16,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 #include <cstring>
 #include <cassert>
 #include <cstdio>
+#include <algorithm>
 #include <type_traits>
 #include <dlfcn.h>
 #include <string>
@@ -54,6 +55,14 @@ inline void pipe_barrier(pipe_t pipe) { (void)pipe; }
 
 #define aclrtCreateStream(x)
 
+#if !defined(__COSTMODEL)
+enum {
+    ACL_MEM_MALLOC_HUGE_FIRST = 0,
+    ACL_MEMCPY_HOST_TO_DEVICE = 0,
+    ACL_MEMCPY_DEVICE_TO_HOST = 1,
+    ACL_MEMCPY_DEVICE_TO_DEVICE = 2,
+};
+
 static inline int aclrtMallocHost(void** p, size_t sz)
 {
     assert(sz != 0 && "[PTO][CA] Constraint violated. Condition: %s. Hint: see docs/coding/debug.md\n");
@@ -61,39 +70,72 @@ static inline int aclrtMallocHost(void** p, size_t sz)
     return 0;
 }
 
-#define aclrtMalloc(a, b, c) aclrtMallocHost(a, b)
+inline int aclrtMalloc(void** p, size_t sz, int) { return aclrtMallocHost(p, sz); }
 
-#define aclrtMemcpy(dst, sz_dst, src, sz_src, type)                            \
-    {                                                                          \
-        for (size_t i = 0; i < sz_src && i < sz_dst; i++)                      \
-            reinterpret_cast<char*>(dst)[i] = reinterpret_cast<char*>(src)[i]; \
-    }
+inline int aclrtMemcpy(void* dst, size_t szDst, const void* src, size_t szSrc, int)
+{
+    std::memcpy(dst, src, std::min(szDst, szSrc));
+    return 0;
+}
 
-#if defined(__CPU_SIM)
 inline int aclrtMemset(void* dst, size_t dstSize, int value, size_t count)
 {
-    constexpr int ACL_SUCCESS = 0;
-    constexpr int ACL_ERROR_GE_PARAM_INVALID = 145000;
+    constexpr int aclSuccess = 0;
+    constexpr int aclErrorParamInvalid = 145000;
 
     if (count == 0) {
-        return ACL_SUCCESS;
+        return aclSuccess;
     }
     if (dst == nullptr || count > dstSize) {
-        return ACL_ERROR_GE_PARAM_INVALID;
+        return aclErrorParamInvalid;
     }
     std::fill_n(reinterpret_cast<uint8_t*>(dst), count, static_cast<uint8_t>(value));
-    return ACL_SUCCESS;
+    return aclSuccess;
 }
+
+inline int aclrtSynchronizeStream(aclrtStream) { return 0; }
+
+inline int aclrtFree(void* p)
+{
+    free(p);
+    return 0;
+}
+
+inline int aclrtFreeHost(void* p)
+{
+    free(p);
+    return 0;
+}
+
+inline int aclrtDestroyStream(aclrtStream) { return 0; }
+inline int aclrtResetDevice(int) { return 0; }
+inline int aclFinalize() { return 0; }
 #endif
 
-#define aclrtSynchronizeStream(x) (0)
-#define aclrtFree(x) free(x)
-#define aclrtFreeHost(x) free(x)
-#define aclrtDestroyStream(x)
-#define aclrtResetDevice(x)
-#define aclFinalize(x)
-#define set_flag(a, b, c)
-#define wait_flag(a, b, c)
+inline void set_flag(pipe_t, pipe_t, int) {}
+inline void wait_flag(pipe_t, pipe_t, int) {}
+#if !defined(__COSTMODEL)
+using mem_dsb_t = int;
+inline constexpr int SINGLE_CACHE_LINE = 0;
+inline constexpr int ENTIRE_DATA_CACHE = 0;
+inline constexpr int CACHELINE_OUT = 0;
+inline constexpr mem_dsb_t DSB_DDR = 0;
+inline constexpr mem_dsb_t DSB_ALL = 0;
+inline constexpr mem_dsb_t DSB_UB = 0;
+inline void dcci(const volatile void*, int) {}
+inline void dcci(const volatile void*, int, int) {}
+inline void dsb(mem_dsb_t) {}
+inline uint64_t& cpu_ctrl_register()
+{
+    static thread_local uint64_t ctrl = 0;
+    return ctrl;
+}
+
+inline uint64_t get_ctrl() { return cpu_ctrl_register(); }
+inline void set_ctrl(uint64_t value) { cpu_ctrl_register() = value; }
+inline uint64_t sbitset1(uint64_t value, int bit) { return value | (1ULL << bit); }
+inline uint64_t sbitset0(uint64_t value, int bit) { return value & ~(1ULL << bit); }
+#endif
 #define __cce_get_tile_ptr(x) x
 #define set_mask_norm(...)
 #define set_vector_mask(...)
@@ -126,6 +168,10 @@ struct CommDeviceContext {
 #define EVENT_ID1 1
 #define EVENT_ID2 2
 #define EVENT_ID3 3
+#define EVENT_ID4 4
+#define EVENT_ID5 5
+#define EVENT_ID6 6
+#define EVENT_ID7 7
 
 #define F16_MAX 65504.0f
 

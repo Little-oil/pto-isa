@@ -18,6 +18,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 #include "pto/cpu/MXTypes.hpp"
 #include "pto/common/debug.h"
 #include <cmath>
+#include <cstdint>
 #include <type_traits>
 
 namespace pto {
@@ -175,6 +176,9 @@ inline D convert_value(S val, RoundMode mode)
         (is_fp4_v<S> && is_float_like_v<D>) || (is_float_like_v<S> && is_fp4_v<D>) ||
         (is_float_like_v<S> && std::is_integral_v<D>)) {
         const volatile double dval = applyRoundingToIntegral(static_cast<double>(val), mode);
+        if constexpr (std::is_same_v<D, uint8_t>) {
+            return static_cast<D>(static_cast<int64_t>(dval));
+        }
         return static_cast<D>(dval);
     } else if constexpr (std::is_integral_v<S> && is_float_like_v<D>) {
         return static_cast<D>(static_cast<double>(val));

@@ -12,6 +12,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 #define COMMON_HPP
 
 #include <pto/common/type.hpp>
+#include <pto/cpu/atomic.hpp>
 
 namespace pto {
 
@@ -183,7 +184,9 @@ PTO_INLINE D ConvertStoreValue(S value, uint64_t scalar)
     }
 }
 
-template <typename D, typename S, typename TileData, QuantMode_t quantMode, bool applyRelu>
+template <
+    typename D, typename S, typename TileData, QuantMode_t quantMode, bool applyRelu,
+    AtomicType atomicType = AtomicType::AtomicNone>
 PTO_INLINE void StoreElement(D* dst, size_t dstIdx, S value, size_t r, size_t c, const std::vector<uint64_t>& scalars)
 {
     size_t scalarIndex = TileData::isRowMajor ? c : r;
@@ -191,7 +194,18 @@ PTO_INLINE void StoreElement(D* dst, size_t dstIdx, S value, size_t r, size_t c,
     if constexpr (quantMode != QuantMode_t::NoQuant) {
         scalar = scalars[scalarIndex];
     }
-    dst[dstIdx] = ConvertStoreValue<D, S, quantMode, applyRelu>(value, scalar);
+    const D converted = ConvertStoreValue<D, S, quantMode, applyRelu>(value, scalar);
+    if constexpr (atomicType == AtomicType::AtomicAdd) {
+        std::lock_guard<std::mutex> lock(cpu::AtomicAddMutex());
+        if constexpr (IsTwinType<D>()) {
+            const auto val = GetProperDataPart(dst, dstIdx);
+            SetProperDataPart(dst, dstIdx, val + converted);
+        } else {
+            dst[dstIdx] += converted;
+        }
+    } else {
+        dst[dstIdx] = converted;
+    }
 }
 
 } // namespace pto

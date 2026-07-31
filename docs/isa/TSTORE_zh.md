@@ -64,6 +64,7 @@ PTO_INST RecordEvent TSTORE_FP(GlobalData& dst, TileData& src, FpTileData& fp, W
         - 布局必须匹配ND/DN/NZ（或特殊情况：`TileData::Rows == 1` 或 `TileData::Cols == 1`）。
         - 对于 `int64_t/uint64_t`，仅支持ND->ND或DN->DN。
     - 对于源tile位置为`TileType::Acc`（包括带量化参数的调用形式和原子写入变体）：
+        - 支持的布局转换：NZ2ND、NZ2NZ、NZ2NC1HWC0、NZ2NDC1HWC0。不支持NZ2DN。
         - 目标布局必须是ND、NZ、NC1HWC0或NDC1HWC0。
         - 源数据类型必须是 `int32_t` 或 `float`。
         - 不使用量化时，目标数据类型必须是 `int32_t/float/half/bfloat16_t`。
@@ -88,6 +89,7 @@ PTO_INST RecordEvent TSTORE_FP(GlobalData& dst, TileData& src, FpTileData& fp, W
         - 布局必须匹配ND/DN/NZ（或特殊情况：`TileData::Rows == 1` 或 `TileData::Cols == 1`）。
         - 强制执行额外的对齐约束（例如，对于ND，行主序宽度（以字节为单位）必须是32的倍数；对于DN，列主序高度（以字节为单位）必须是32的倍数，但有特殊情况例外）。
     - 对于源tile位置为`TileType::Acc`（包括带量化参数的调用形式和原子写入变体）：
+        - 支持的布局转换：NZ2ND、NZ2NZ、NZ2NHWC、NZ2NCHW、NZ2NCDHW。不支持NZ2DN。
         - 目标布局必须是ND、NZ、NHWC、NCHW或NCDHW；源数据类型必须是 `int32_t` 或 `float`。
         - 不使用量化时，目标数据类型必须是 `int32_t/float/half/bfloat16_t`。
         - ACC到GM的数据类型支持取决于调用形式：

@@ -177,6 +177,7 @@ PTO_INST RecordEvent TMOV(DstTileData &dst, SrcTileData &src, TmpTileData &tmp, 
     - plain/relu forms use cast pre-quant mode derived by `GetCastPreQuantMode<SrcDType, DstDType>()`
     - scalar-quant forms use `GetScalarPreQuantMode<SrcDType, DstDType>()`
     - vector-quant forms require an `FpTileData` operand with `FpTileData::Loc == TileType::Scaling`, and use `GetVectorPreQuantMode<SrcDType, DstDType>()`
+    - channel split is not supported
 
 ### A5 implementation checks
 

@@ -316,6 +316,12 @@ enum class PadValue : uint64_t {
     CustomBase = 0x100000000ULL,
 };
 
+enum class TFillPadMode : uint8_t {
+    Normal = 0,
+    InPlace = 1,
+    Expand = 2,
+};
+
 enum class SaturationMode : uint8_t {
     // Saturation enabled (default) - CTRL bit 59 = 0
     ON = 0,

@@ -55,9 +55,21 @@ Implemented in the backend headers pulled in by `include/pto/common/pto_instr_im
 template <typename TileData, PadValue PadVal = PadValue::Zero, typename... WaitEvents>
 PTO_INST RecordEvent TFILLPAD(TileData &dst, TileData &src, WaitEvents &... events);
 
-template <typename DstTileData, typename SrcTileData, typename... WaitEvents>
+template <
+    TFillPadMode mode = TFillPadMode::Normal,
+    typename DstTileData,
+    typename SrcTileData,
+    typename... WaitEvents>
 PTO_INST RecordEvent TFILLPAD(DstTileData &dst, SrcTileData &src, WaitEvents &... events);
 ```
+
+For vector tiles, `mode` selects the operation variant:
+
+- `TFillPadMode::Normal`: destination and source static shapes must match.
+- `TFillPadMode::InPlace`: destination and source must alias the same storage.
+- `TFillPadMode::Expand`: destination may have a larger static shape than source.
+
+`TFILLPAD_INPLACE` and `TFILLPAD_EXPAND` remain available as compatibility aliases.
 
 ## Constraints
 

@@ -203,7 +203,7 @@ AICORE void runTFILLPAD(
         wait_flag(PIPE_MTE2, PIPE_V, EVENT_ID0);
 #endif
         t0 = get_syscnt();
-        TFILLPAD_EXPAND(vecTileP, vecTile);
+        TFILLPAD<TFillPadMode::Expand>(vecTileP, vecTile);
     } else {
         using TileData =
             Tile<TileType::Vec, T, kTRows_, kTCols_, BLayout::RowMajor, -1, -1, SLayout::NoneBox, 512, LoadPadVal_>;
@@ -223,7 +223,7 @@ AICORE void runTFILLPAD(
 #ifdef __PTO_AUTO__
             TRESHAPE(vecTileP, vecTile);
 #endif
-            TFILLPAD_INPLACE(vecTileP, vecTile);
+            TFILLPAD<TFillPadMode::InPlace>(vecTileP, vecTile);
         } else
             TFILLPAD(vecTileP, vecTile);
     }

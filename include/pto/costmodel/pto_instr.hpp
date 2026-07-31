@@ -927,30 +927,35 @@ PTO_INST RecordEvent TFILLPAD(TileData& dst, TileData& src, WaitEvents&... event
 }
 
 template <
-    typename DstTileData, typename SrcTileData,
+    TFillPadMode mode = TFillPadMode::Normal, typename DstTileData, typename SrcTileData,
     std::enable_if_t<(DstTileData::Loc == TileType::Vec) && (SrcTileData::Loc == TileType::Vec), int> = 0,
     typename... WaitEvents>
 PTO_INST RecordEvent TFILLPAD(DstTileData& dst, SrcTileData& src, WaitEvents&... events)
 {
+    static_assert(
+        mode == TFillPadMode::Normal || mode == TFillPadMode::InPlace || mode == TFillPadMode::Expand,
+        "TFILLPAD: invalid mode.");
     TSYNC(events...);
-    MAP_INSTR_IMPL_T(TFILLPAD, PTO_TEMPLATE_ARGS(DstTileData, SrcTileData), dst, src);
+    if constexpr (mode == TFillPadMode::Normal) {
+        MAP_INSTR_IMPL_T(TFILLPAD, PTO_TEMPLATE_ARGS(DstTileData, SrcTileData), dst, src);
+    } else if constexpr (mode == TFillPadMode::InPlace) {
+        MAP_INSTR_IMPL(TFILLPAD_INPLACE, dst, src);
+    } else if constexpr (mode == TFillPadMode::Expand) {
+        MAP_INSTR_IMPL(TFILLPAD_EXPAND, dst, src);
+    }
     return {};
 }
 
 template <typename DstTileData, typename SrcTileData, typename... WaitEvents>
 PTO_INST RecordEvent TFILLPAD_INPLACE(DstTileData& dst, SrcTileData& src, WaitEvents&... events)
 {
-    TSYNC(events...);
-    MAP_INSTR_IMPL(TFILLPAD_INPLACE, dst, src);
-    return {};
+    return TFILLPAD<TFillPadMode::InPlace>(dst, src, events...);
 }
 
 template <typename DstTileData, typename SrcTileData, typename... WaitEvents>
 PTO_INST RecordEvent TFILLPAD_EXPAND(DstTileData& dst, SrcTileData& src, WaitEvents&... events)
 {
-    TSYNC(events...);
-    MAP_INSTR_IMPL(TFILLPAD_EXPAND, dst, src);
-    return {};
+    return TFILLPAD<TFillPadMode::Expand>(dst, src, events...);
 }
 
 template <typename DstTileData, typename SrcTileData, typename IdxTileData>

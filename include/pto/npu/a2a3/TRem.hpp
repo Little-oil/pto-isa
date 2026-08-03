@@ -76,11 +76,40 @@ struct RemOp {
         vconv_s322f32(src1_f, src1, 1, 1, 1, 8, 8);
         pipe_barrier(PIPE_V);
 
-        RemF32Instr(dst_f, src0_f, src1_f, tmp_f);
+        vdiv(tmp_f, src0_f, src1_f, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
 
-        vconv_f322s32r(dst, dst_f, 1, 1, 1, 8, 8);
+        vconv_f322s32f(tmp, tmp_f, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
         vconv_f322s32r(src0, src0_f, 1, 1, 1, 8, 8);
         vconv_f322s32r(src1, src1_f, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+        vmul(dst, tmp, src1, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vsub(dst, src0, dst, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vconv_s322f32(dst_f, dst, 1, 1, 1, 8, 8);
+        vconv_s322f32(src1_f, src1, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+        // compute remainder * divisor in fp32 to avoid int32 overflow in the sign check
+        vmul(tmp_f, dst_f, src1_f, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        __ubuf__ uint8_t* cmpMask = reinterpret_cast<__ubuf__ uint8_t*>(tmp + TmpStride);
+        vcmpvs_lt(cmpMask, tmp_f, 0.0f, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vadd(tmp_f, dst_f, src1_f, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        set_cmpmask(cmpMask);
+        vsel(dst_f, tmp_f, dst_f, 1, 1, 1, 1, 8, 8, 8, 0);
+        pipe_barrier(PIPE_V);
+
+        vconv_f322s32z(dst, dst_f, 1, 1, 1, 8, 8);
         pipe_barrier(PIPE_V);
     }
 

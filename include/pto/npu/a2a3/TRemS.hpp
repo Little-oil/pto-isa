@@ -72,12 +72,43 @@ struct RemSOp {
         __ubuf__ float* tmp_f = reinterpret_cast<__ubuf__ float*>(tmp);
 
         vconv_s322f32(src_f, src, 1, 1, 1, 8, 8);
+        vector_dup(tmp_f, (float)x, 1, 1, 1, 8, 8);
         pipe_barrier(PIPE_V);
 
-        RemSF32Instr(dst_f, src_f, (float)x, tmp_f);
+        vdiv(tmp_f, src_f, tmp_f, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
 
-        vconv_f322s32r(dst, dst_f, 1, 1, 1, 8, 8);
         vconv_f322s32r(src, src_f, 1, 1, 1, 8, 8);
+        vconv_f322s32f(tmp, tmp_f, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vmuls(dst, tmp, x, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vsub(dst, src, dst, 1, 1, 1, 1, 8, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vconv_s322f32(dst_f, dst, 1, 1, 1, 8, 8);
+        vconv_s322f32(tmp_f, tmp, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vmuls(tmp_f, dst_f, (float)x, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        __ubuf__ uint8_t* cmpMask = reinterpret_cast<__ubuf__ uint8_t*>(tmp_f);
+        vcmpvs_lt(cmpMask, tmp_f, 0.0f, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        set_cmpmask(cmpMask);
+        pipe_barrier(PIPE_V);
+
+        vadds(tmp_f, dst_f, (float)x, 1, 1, 1, 8, 8);
+        pipe_barrier(PIPE_V);
+
+        vsel(dst_f, tmp_f, dst_f, 1, 1, 1, 1, 8, 8, 8, 0);
+        pipe_barrier(PIPE_V);
+
+        vconv_f322s32z(dst, dst_f, 1, 1, 1, 8, 8);
         pipe_barrier(PIPE_V);
     }
 };

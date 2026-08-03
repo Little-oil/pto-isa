@@ -34,7 +34,7 @@ namespace detail {
 PTO_INTERNAL void DcciCke(__gm__ void* ptr)
 {
     __asm__ __volatile__("");
-    dcci(ptr, ENTIRE_DATA_CACHE);
+    dcci(ptr, cache_line_t::ENTIRE_DATA_CACHE);
     __asm__ __volatile__("");
 }
 } // namespace detail

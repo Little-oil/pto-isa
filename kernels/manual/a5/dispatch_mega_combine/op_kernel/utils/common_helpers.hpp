@@ -62,7 +62,7 @@ AICORE inline void MegaMoeDcciGmRangeNoFence(__gm__ void* ptr, uint64_t bytes)
     const uint64_t end = (reinterpret_cast<uint64_t>(ptr) + bytes + cacheLineBytes - 1U) & ~(cacheLineBytes - 1U);
     for (uint64_t addr = start; addr < end; addr += cacheLineBytes) {
         __asm__ __volatile__("");
-        dcci(reinterpret_cast<__gm__ void*>(addr), SINGLE_CACHE_LINE);
+        dcci(reinterpret_cast<__gm__ void*>(addr), cache_line_t::SINGLE_CACHE_LINE);
         __asm__ __volatile__("");
     }
 }

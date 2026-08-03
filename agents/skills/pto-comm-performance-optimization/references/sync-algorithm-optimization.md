@@ -48,14 +48,14 @@ Block 1~N: TWAIT(local flag)  ← 一次 TWAIT 而非 nranks 次
 ```cpp
 // 优化前：每次读队列数据都 dcci
 for (int i = 0; i < count; i++) {
-    dcci(&queue->data[i], SINGLE_CACHE_LINE);
+    dcci(&queue->data[i], cache_line_t::SINGLE_CACHE_LINE);
     process(queue->data[i]);
 }
 
 // 优化后：使用 TTEST 硬件指令代替 dcci + 软件比较
 comm::Signal sig(&queue->count);
 if (comm::TTEST(sig, expected, comm::WaitCmp::GE)) {
-    dcci(&queue->data[head], SINGLE_CACHE_LINE);
+    dcci(&queue->data[head], cache_line_t::SINGLE_CACHE_LINE);
     process(queue->data[head]);
 }
 ```

@@ -53,7 +53,7 @@ AICORE inline int TSYNC_CVID(int block_idx, __gm__ uint8_t* cv_comm_buf)
     __gm__ volatile uint32_t* comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t*>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
     comm_slot_ptr[0] = static_cast<uint32_t>(comm_slot);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
     ffts_cross_core_sync(PIPE_MTE2, _getFFTSMsg(CV_CORE_SYNC, CV_COMM_CTRL));
 #elif defined(__DAV_VEC__)
@@ -61,7 +61,7 @@ AICORE inline int TSYNC_CVID(int block_idx, __gm__ uint8_t* cv_comm_buf)
     PTO_ASSERT(cv_comm_buf != nullptr, "cv_comm_buf must be non-null when CV comm is enabled on vector cores");
     __gm__ volatile uint32_t* comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t*>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     wait_flag_dev(CV_COMM_CTRL);
     comm_slot = static_cast<int>(comm_slot_ptr[0]);
 #endif

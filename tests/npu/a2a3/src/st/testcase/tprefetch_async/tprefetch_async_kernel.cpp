@@ -158,7 +158,7 @@ __global__ AICORE void TPrefetchAsyncL2BenefitKernel(
     metrics[1] = prefetchedCycles;
     metrics[2] = success ? pairCount : 0U;
     __asm__ __volatile__("");
-    dcci((__gm__ void*)metrics, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)metrics, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
     dsb(DSB_DDR);
 }

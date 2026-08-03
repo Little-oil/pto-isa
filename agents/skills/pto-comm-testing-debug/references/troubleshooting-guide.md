@@ -21,7 +21,7 @@ while (timeout-- > 0) {
     if (comm::TTEST(sig, expected, comm::WaitCmp::GE)) break;
 }
 if (timeout <= 0) {
-    dcci((__gm__ void *)signal_ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void *)signal_ptr, cache_line_t::SINGLE_CACHE_LINE);
     // 记录异常
 }
 ```
@@ -97,7 +97,7 @@ if (!event.valid()) {
 **解决**：
 
 ```cpp
-dcci((__gm__ void *)&shared_data, SINGLE_CACHE_LINE);
+dcci((__gm__ void *)&shared_data, cache_line_t::SINGLE_CACHE_LINE);
 __asm__ __volatile__("");  // 编译器屏障
 int32_t value = shared_data;
 ```

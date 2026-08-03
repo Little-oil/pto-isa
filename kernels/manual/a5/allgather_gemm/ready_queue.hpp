@@ -198,10 +198,10 @@ AICORE inline void SetLocalSummaryReady(volatile __gm__ int32_t* summary_base, i
     if (summary_base == nullptr || src_rank < 0)
         return;
     volatile __gm__ int32_t* ptr = summary_base + src_rank;
-    dcci((__gm__ void*)ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
     *ptr = value;
-    dcci((__gm__ void*)ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
 }
 
@@ -209,7 +209,7 @@ AICORE inline bool IsChunkReady(volatile __gm__ ChunkFlagMatrix* flags, int32_t 
 {
     volatile __gm__ int32_t* ptr = GetChunkFlagPtr(flags, src_rank, chunk_idx);
     int32_t epoch = flags->epoch;
-    dcci((__gm__ void*)ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
     return (*ptr >= epoch);
 }
@@ -220,7 +220,7 @@ AICORE inline bool IsAnyReadyFromSrc(volatile __gm__ int32_t* summary_base, int3
     if (summary_base == nullptr || src_rank < 0)
         return false;
     volatile __gm__ int32_t* ptr = summary_base + src_rank;
-    dcci((__gm__ void*)ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
     return (*ptr >= 1);
 }
@@ -230,7 +230,7 @@ AICORE inline int32_t GetReadyCountFromSrc(volatile __gm__ int32_t* summary_base
     if (summary_base == nullptr || src_rank < 0)
         return 0;
     volatile __gm__ int32_t* ptr = summary_base + src_rank;
-    dcci((__gm__ void*)ptr, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
     return *ptr;
 }

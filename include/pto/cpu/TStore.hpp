@@ -103,14 +103,15 @@ __tf__ PTO_INLINE void TStoreAcc(GlobalData& dst, TileData& src, const std::vect
                 size_t row = s0 * shape_2 * shape_3 + s2 * shape_3 + s3;
                 for (int s1 = 0; s1 < shape_1; ++s1) {
                     for (int s4 = 0; s4 < shape_4; ++s4) {
-                        typename TileData::DType val;
                         size_t col = s1 * shape_4 + s4;
-                        if (row < validRow && col < validCol) {
-                            if constexpr (quantMode != QuantMode_t::NoQuant) {
-                                scalar = scalars[TileData::isRowMajor ? col : row];
-                            }
-                            val = src.GetElement(row, col);
+                        if (row >= validRow || col >= validCol) {
+                            continue;
                         }
+
+                        if constexpr (quantMode != QuantMode_t::NoQuant) {
+                            scalar = scalars[TileData::isRowMajor ? col : row];
+                        }
+                        typename TileData::DType val = src.GetElement(row, col);
                         const auto converted = ConvertStoreValue<
                             typename GlobalData::DType, typename TileData::DType, quantMode, applyRelu>(val, scalar);
                         if constexpr (atomicType == AtomicType::AtomicAdd) {

@@ -32,7 +32,7 @@ constexpr int32_t kIdleCoreMark = 2;
 PTO_INTERNAL void AicScalarStore(__gm__ int32_t* dst, int32_t value)
 {
     dst[0] = value;
-    dcci(static_cast<__gm__ void*>(dst), SINGLE_CACHE_LINE);
+    dcci(static_cast<__gm__ void*>(dst), cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
 }
 

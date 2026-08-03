@@ -76,7 +76,7 @@ PTO_INTERNAL bool InitializeRuntimeCtx(const SdmaSession& session)
     // ChannelInfo is populated outside AI Core and read through scalar loads during Post.
     // Invalidate stale metadata once at session build time to keep DCCI out of the Post hot path.
     __asm__ __volatile__("");
-    dcci((__gm__ void*)channels, ENTIRE_DATA_CACHE);
+    dcci((__gm__ void*)channels, cache_line_t::ENTIRE_DATA_CACHE);
     __asm__ __volatile__("");
     dsb(DSB_DDR);
     for (uint32_t queue = 0U; queue < execCtx.baseConfig.queue_num; ++queue) {
@@ -175,7 +175,7 @@ PTO_INTERNAL void PublishDataTransferSqes(
     uint32_t syncId)
 {
     __asm__ __volatile__("");
-    dcci((__gm__ void*)channels->sq_base, ENTIRE_DATA_CACHE);
+    dcci((__gm__ void*)channels->sq_base, cache_line_t::ENTIRE_DATA_CACHE);
     __asm__ __volatile__("");
     dsb(DSB_DDR);
     for (uint32_t queue = 0U; queue < dataQueueCount; ++queue) {
@@ -217,7 +217,7 @@ PTO_INTERNAL void PublishFlagTransferSqes(
         __gm__ BatchWriteItem* sqRing = reinterpret_cast<__gm__ BatchWriteItem*>(channels[queue].sq_base);
         __gm__ BatchWriteItem* flagSqe = sqRing + flagSqeIndex;
         __asm__ __volatile__("");
-        dcci((__gm__ void*)flagSqe, SINGLE_CACHE_LINE);
+        dcci((__gm__ void*)flagSqe, cache_line_t::SINGLE_CACHE_LINE);
         __asm__ __volatile__("");
     }
     dsb(DSB_DDR);

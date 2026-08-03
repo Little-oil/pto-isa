@@ -23,7 +23,7 @@ AICORE PTO_INLINE void FlushScatterOutput()
     wait_flag(PIPE_V, PIPE_MTE3, EVENT_ID0);
     set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
     wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
-    dcci(static_cast<__gm__ void*>(0), ENTIRE_DATA_CACHE);
+    dcci(static_cast<__gm__ void*>(0), cache_line_t::ENTIRE_DATA_CACHE);
     dsb(DSB_DDR);
     pipe_barrier(PIPE_ALL);
 }

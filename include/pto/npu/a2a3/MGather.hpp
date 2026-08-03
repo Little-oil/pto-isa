@@ -360,7 +360,7 @@ __tf__ AICORE void MGatherGm2L1ElemImpl(
     const uint32_t numLines = (totalBytes + kCacheLineBytes - 1) / kCacheLineBytes;
     __gm__ uint8_t* flushPtr = reinterpret_cast<__gm__ uint8_t*>(scratchPtr);
     for (uint32_t i = 0; i < numLines; i++) {
-        dcci(static_cast<__gm__ void*>(flushPtr + i * kCacheLineBytes), SINGLE_CACHE_LINE);
+        dcci(static_cast<__gm__ void*>(flushPtr + i * kCacheLineBytes), cache_line_t::SINGLE_CACHE_LINE);
     }
     dsb(DSB_DDR);
     PtoSetWaitFlag<PIPE_S, PIPE_MTE2>();

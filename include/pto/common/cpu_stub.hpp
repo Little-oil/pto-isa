@@ -66,7 +66,7 @@ enum {
 static inline int aclrtMallocHost(void** p, size_t sz)
 {
     assert(sz != 0 && "[PTO][CA] Constraint violated. Condition: %s. Hint: see docs/coding/debug.md\n");
-    *p = malloc(sz);
+    *p = calloc(1, sz);
     return 0;
 }
 
@@ -116,9 +116,11 @@ inline void set_flag(pipe_t, pipe_t, int) {}
 inline void wait_flag(pipe_t, pipe_t, int) {}
 #if !defined(__COSTMODEL)
 using mem_dsb_t = int;
-inline constexpr int SINGLE_CACHE_LINE = 0;
-inline constexpr int ENTIRE_DATA_CACHE = 0;
-inline constexpr int CACHELINE_OUT = 0;
+struct cache_line_t {
+    static constexpr int SINGLE_CACHE_LINE = 0;
+    static constexpr int ENTIRE_DATA_CACHE = 0;
+    static constexpr int CACHELINE_OUT = 0;
+};
 inline constexpr mem_dsb_t DSB_DDR = 0;
 inline constexpr mem_dsb_t DSB_ALL = 0;
 inline constexpr mem_dsb_t DSB_UB = 0;

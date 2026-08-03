@@ -19,7 +19,7 @@ __global__ AICORE __attribute__((aiv)) void mscatter_warmup_kernel() {}
 
 AICORE PTO_INLINE void FlushScatterOutput()
 {
-    dcci(static_cast<__gm__ void*>(0), ENTIRE_DATA_CACHE);
+    dcci(static_cast<__gm__ void*>(0), cache_line_t::ENTIRE_DATA_CACHE);
     dsb(DSB_DDR);
 }
 

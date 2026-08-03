@@ -280,7 +280,7 @@ FFTS 硬件在任务启动时建立逻辑到物理核心的映射：
     __gm__ volatile uint32_t *comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t *>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
     comm_slot_ptr[0] = static_cast<uint32_t>(comm_slot);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
 
     // 通过 FFTS 向 Vector 核心发信号
@@ -290,7 +290,7 @@ FFTS 硬件在任务启动时建立逻辑到物理核心的映射：
     // Vector 核心等待 Cube 的信号，然后从 GM 读取集群 ID
     __gm__ volatile uint32_t *comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t *>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     wait_flag_dev(CV_COMM_CTRL);
     comm_slot = static_cast<int>(comm_slot_ptr[0]);
 #endif

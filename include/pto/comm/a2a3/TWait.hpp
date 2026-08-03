@@ -81,7 +81,7 @@ PTO_INTERNAL void TWAIT_IMPL(GlobalSignalData& signalData, int32_t cmpValue, Wai
                         for (int d4 = 0; d4 < s4; ++d4) {
                             const int64_t idx = d0 * st0 + d1 * st1 + d2 * st2 + d3 * st3 + d4 * st4;
                             __asm__ __volatile__("");
-                            dcci((__gm__ void*)(basePtr + idx), SINGLE_CACHE_LINE);
+                            dcci((__gm__ void*)(basePtr + idx), cache_line_t::SINGLE_CACHE_LINE);
                             __asm__ __volatile__("");
                             if (!detail::CompareSignalRuntime(basePtr[idx], cmpValue, cmp)) {
                                 allSatisfied = false;

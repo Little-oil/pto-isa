@@ -208,7 +208,7 @@ AICORE inline void DcciGmRangeNoFence(__gm__ void* ptr, uint64_t bytes)
     uint64_t start = reinterpret_cast<uint64_t>(ptr) & ~(cacheLineBytes - 1);
     uint64_t end = (reinterpret_cast<uint64_t>(ptr) + bytes + cacheLineBytes - 1) & ~(cacheLineBytes - 1);
     for (uint64_t addr = start; addr < end; addr += cacheLineBytes) {
-        dcci(reinterpret_cast<__gm__ void*>(addr), SINGLE_CACHE_LINE);
+        dcci(reinterpret_cast<__gm__ void*>(addr), cache_line_t::SINGLE_CACHE_LINE);
     }
 }
 

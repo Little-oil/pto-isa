@@ -24,7 +24,7 @@ namespace pto {
 PTO_INTERNAL void SYNCALL_SOFT_DCCI(__gm__ void* ptr)
 {
     __asm__ __volatile__("");
-    dcci(ptr, SINGLE_CACHE_LINE);
+    dcci(ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
 }
 

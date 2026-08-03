@@ -121,7 +121,7 @@ inline void MultiBlockQueueSetInit(MultiBlockQueueSet* qset, int num_blocks, int
 
 AICORE inline volatile __gm__ PerBlockQueue* GetMyBlockQueue(volatile __gm__ MultiBlockQueueSet* qset, int queue_idx)
 {
-    dcci((__gm__ void*)&qset->queue_offsets[queue_idx], SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)&qset->queue_offsets[queue_idx], cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
     int32_t offset = qset->queue_offsets[queue_idx];
     return reinterpret_cast<volatile __gm__ PerBlockQueue*>(reinterpret_cast<volatile __gm__ uint8_t*>(qset) + offset);
@@ -139,13 +139,13 @@ AICORE inline void PerBlockQueueEnqueueFast(volatile __gm__ PerBlockQueue* queue
 {
     volatile __gm__ int32_t* slot = GetQueueSlot(queue, local_slot);
     *slot = tile_idx;
-    dcci((__gm__ void*)slot, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)slot, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
 
     queue->tail = local_slot + 1;
 
     queue->count = local_slot + 1;
-    dcci((__gm__ void*)&queue->count, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)&queue->count, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
 }
 
@@ -163,7 +163,7 @@ AICORE inline int32_t PerBlockQueueTryDequeue(volatile __gm__ PerBlockQueue* que
         return -1;
     }
     volatile __gm__ int32_t* slot = GetQueueSlot(queue, local_head);
-    dcci((__gm__ void*)slot, SINGLE_CACHE_LINE);
+    dcci((__gm__ void*)slot, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("");
     return *slot;
 }

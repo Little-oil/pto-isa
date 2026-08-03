@@ -30,7 +30,7 @@ AICORE inline void DcciCachelines(__gm__ uint8_t* addr, uint64_t length)
     __gm__ uint8_t* end = (__gm__ uint8_t*)(((uint64_t)addr + length) / kCacheLineSize * kCacheLineSize);
     for (uint64_t i = 0; i <= static_cast<uint64_t>(end - start); i += kCacheLineSize) {
         __asm__ __volatile__("");
-        dcci((__gm__ void*)(start + i), SINGLE_CACHE_LINE);
+        dcci((__gm__ void*)(start + i), cache_line_t::SINGLE_CACHE_LINE);
         __asm__ __volatile__("");
     }
 }

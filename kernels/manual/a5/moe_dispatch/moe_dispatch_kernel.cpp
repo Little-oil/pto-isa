@@ -631,7 +631,7 @@ AICORE void MoeDispatchWithSync(
                         int32_t tpeIdx = srcRank * paddedExpNum + dst * expertPerRank + g;
                         volatile __gm__ int32_t* tpePtr = reinterpret_cast<volatile __gm__ int32_t*>(wsTPE + tpeIdx);
                         __asm__ __volatile__("");
-                        dcci((__gm__ void*)tpePtr, SINGLE_CACHE_LINE);
+                        dcci((__gm__ void*)tpePtr, cache_line_t::SINGLE_CACHE_LINE);
                         __asm__ __volatile__("");
                         offset += *tpePtr;
                     }

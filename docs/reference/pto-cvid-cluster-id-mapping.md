@@ -280,7 +280,7 @@ On A2A3, when using the generic implementation, the cluster ID is communicated t
     __gm__ volatile uint32_t *comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t *>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
     comm_slot_ptr[0] = static_cast<uint32_t>(comm_slot);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
 
     // Signal Vector cores via FFTS
@@ -290,7 +290,7 @@ On A2A3, when using the generic implementation, the cluster ID is communicated t
     // Vector core waits for Cube's signal, then reads cluster ID from GM
     __gm__ volatile uint32_t *comm_slot_ptr = reinterpret_cast<__gm__ volatile uint32_t *>(
         cv_comm_buf + static_cast<std::size_t>(block_idx) * CV_COMM_SLOT_BYTES);
-    dcci(comm_slot_ptr, SINGLE_CACHE_LINE);
+    dcci(comm_slot_ptr, cache_line_t::SINGLE_CACHE_LINE);
     wait_flag_dev(CV_COMM_CTRL);
     comm_slot = static_cast<int>(comm_slot_ptr[0]);
 #endif

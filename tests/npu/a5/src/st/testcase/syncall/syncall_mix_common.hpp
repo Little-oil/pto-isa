@@ -49,7 +49,7 @@ PTO_INTERNAL int32_t GetMixLogicalIdx()
 PTO_INTERNAL void SoftDcci(__gm__ void* ptr)
 {
     __asm__ __volatile__("" ::: "memory");
-    dcci(ptr, SINGLE_CACHE_LINE);
+    dcci(ptr, cache_line_t::SINGLE_CACHE_LINE);
     __asm__ __volatile__("" ::: "memory");
 }
 

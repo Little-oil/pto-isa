@@ -464,12 +464,12 @@ The A5 implementation hides almost the entire pipe model behind `cce::async_invo
 ```cpp
 AICORE PTO_INLINE void FlushScatterOutput()
 {
-    dcci(static_cast<__gm__ void *>(0), ENTIRE_DATA_CACHE);
+    dcci(static_cast<__gm__ void *>(0), cache_line_t::ENTIRE_DATA_CACHE);
     dsb(DSB_DDR);
 }
 ```
 
-`dcci(0, ENTIRE_DATA_CACHE)` invalidates the AIV scalar D-cache so any buffered GM writes are pushed to HBM; `dsb(DSB_DDR)` blocks until the writes are observable at the DDR boundary. This is a **wrapper-level pattern** (not part of the `MSCATTER` intrinsic) — kernel authors should append it to their scatter wrapper when the host code reads back the GM table immediately after the kernel returns.
+`dcci(0, cache_line_t::ENTIRE_DATA_CACHE)` invalidates the AIV scalar D-cache so any buffered GM writes are pushed to HBM; `dsb(DSB_DDR)` blocks until the writes are observable at the DDR boundary. This is a **wrapper-level pattern** (not part of the `MSCATTER` intrinsic) — kernel authors should append it to their scatter wrapper when the host code reads back the GM table immediately after the kernel returns.
 
 ## UB Memory Budget
 

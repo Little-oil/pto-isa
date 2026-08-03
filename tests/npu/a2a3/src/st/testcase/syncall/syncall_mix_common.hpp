@@ -47,7 +47,7 @@ PTO_INTERNAL void StoreMixInt32Line(__gm__ int32_t* dst, int32_t value, uint64_t
     pipe_barrier(PIPE_ALL);
     copy_ubuf_to_gm(static_cast<__gm__ void*>(dst), static_cast<__ubuf__ void*>(ub), 0, 1, 1, 0, 0);
     pipe_barrier(PIPE_ALL);
-    dcci(static_cast<__gm__ void*>(dst), SINGLE_CACHE_LINE);
+    dcci(static_cast<__gm__ void*>(dst), cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
 #elif defined(__DAV_CUBE__)
     (void)ubAddr;
@@ -57,7 +57,7 @@ PTO_INTERNAL void StoreMixInt32Line(__gm__ int32_t* dst, int32_t value, uint64_t
     pipe_barrier(PIPE_ALL);
     copy_cbuf_to_gm(static_cast<__gm__ void*>(dst), static_cast<__cbuf__ void*>(l1), 0, 1, 1, 0, 0);
     pipe_barrier(PIPE_ALL);
-    dcci(static_cast<__gm__ void*>(dst), SINGLE_CACHE_LINE);
+    dcci(static_cast<__gm__ void*>(dst), cache_line_t::SINGLE_CACHE_LINE);
     dsb(DSB_DDR);
 #else
     (void)dst;
@@ -71,7 +71,7 @@ PTO_INTERNAL void InvalidateMixInt32Lines(__gm__ int32_t* addr, int32_t lines)
 {
     for (int32_t i = 0; i < lines; ++i) {
         __asm__ __volatile__("");
-        dcci(static_cast<__gm__ void*>(addr + i * kInt32PerCacheLine), SINGLE_CACHE_LINE);
+        dcci(static_cast<__gm__ void*>(addr + i * kInt32PerCacheLine), cache_line_t::SINGLE_CACHE_LINE);
         __asm__ __volatile__("");
     }
     dsb(DSB_DDR);
@@ -99,7 +99,7 @@ CheckMixFlags(__gm__ int32_t* flags, int32_t totalParticipants, uint64_t ubAddr,
     int32_t allVisible = 1;
     for (int32_t i = 0; i < totalParticipants; ++i) {
         __gm__ int32_t* flag = flags + i * kInt32PerCacheLine;
-        dcci(static_cast<__gm__ void*>(flag), SINGLE_CACHE_LINE);
+        dcci(static_cast<__gm__ void*>(flag), cache_line_t::SINGLE_CACHE_LINE);
         dsb(DSB_DDR);
         if (flag[0] != (i + 1) * multiplier) {
             allVisible = 0;

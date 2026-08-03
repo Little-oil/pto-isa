@@ -34,7 +34,7 @@ PTO_INTERNAL void InvalidateInt32Lines(__gm__ int32_t* addr, int32_t lines)
 {
     for (int32_t i = 0; i < lines; ++i) {
         __asm__ __volatile__("");
-        dcci(static_cast<__gm__ void*>(addr + i * kInt32PerCacheLine), SINGLE_CACHE_LINE);
+        dcci(static_cast<__gm__ void*>(addr + i * kInt32PerCacheLine), cache_line_t::SINGLE_CACHE_LINE);
         __asm__ __volatile__("");
     }
     dsb(DSB_DDR);

@@ -256,7 +256,7 @@ PTO_INTERNAL void TCONCAT_IMPL(
 
     PTO_ASSERT(validRow == src0.GetValidRow(), "TCONCAT: validRow of src0 must match dst.");
     PTO_ASSERT(validRow == src1.GetValidRow(), "TCONCAT: validRow of src1 must match dst.");
-    PTO_ASSERT(dstIdx.GetValidRow() == 1, "TCONCAT: validCol of src1 must match 1.");
+    PTO_ASSERT(dstIdx.GetValidCol() == 1, "TCONCAT: validCol of dstIdx must match 1.");
 
     constexpr unsigned elementsPerBlock = BLOCK_BYTE_SIZE / sizeof(typename DstTile::DType);
     constexpr unsigned elementsPerRepeat = REPEAT_BYTE / sizeof(typename DstTile::DType);

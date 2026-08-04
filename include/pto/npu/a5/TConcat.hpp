@@ -249,14 +249,14 @@ PTO_INTERNAL void TCONCAT_IMPL(
     TConcatIdxCheck<TileDst, TileSrc0, TileSrc1, TileSrc0Idx, TileSrc1Idx>();
     static_assert(
         std::is_same<typename TileSrc0Idx::DType, typename TileDstIdx::DType>::value,
-        "TONCAT: Data type of src0Idx and dstIdx must be the same");
+        "TCONCAT: Data type of src0Idx and dstIdx must be the same");
 
     unsigned validRow = dst.GetValidRow();
     unsigned dstValidCol = dst.GetValidCol();
 
     PTO_ASSERT(validRow == src0.GetValidRow(), "TCONCAT: validRow of src0 must match dst.");
     PTO_ASSERT(validRow == src1.GetValidRow(), "TCONCAT: validRow of src1 must match dst.");
-    PTO_ASSERT(dstIdx.GetValidRow() == 1, "TCONCAT: validCol of src1 must match 1.");
+    PTO_ASSERT(dstIdx.GetValidCol() == 1, "TCONCAT: validCol of dstIdx must match 1.");
 
     constexpr unsigned elementsPerRepeat = CCE_VL / sizeof(typename TileDst::DType);
     constexpr unsigned dstStride = TileDst::RowStride;

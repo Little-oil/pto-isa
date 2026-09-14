@@ -37,6 +37,7 @@ endfunction()
 find_package(Threads REQUIRED)
 
 set(ALL_TESTCASES
+ffts
 hashfind
 mgather
 mgather_gm2l1

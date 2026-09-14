@@ -8,17 +8,22 @@ INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A
 See LICENSE in the root of the software repository for the full text of the License.
 */
 
-#ifndef TSYNC_HPP
-#define TSYNC_HPP
-#include <pto/common/type.hpp>
-#include <pto/common/event.hpp>
-#include <pto/cpu/FFTS.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <pto/pto-inst.hpp>
 
-namespace pto {
+extern "C" void configure(void* lane, void* storage) { pto::cpu_sim::register_hooks(lane, storage); }
 
-// single pipeline wait, only support MTE3 or ALL pipeline
-template <Op OpCode>
-PTO_INTERNAL void TSYNC_IMPL()
-{}
-} // namespace pto
-#endif
+extern "C" void signal_event(int event, int mode, int count)
+{
+    __builtin_cce_ffts_cross_core_sync(PIPE_MTE3, pto::getFFTSMsg(mode, event, count));
+}
+
+extern "C" void wait_event(int event) { __builtin_cce_wait_flag_dev(event); }
+
+extern "C" void legacy_signal_event(int event)
+{
+    ffts_cross_core_sync(PIPE_FIX, pto::getFFTSMsg(FFTS_MODE_VAL, event));
+}
+
+extern "C" void legacy_wait_event(int event) { wait_flag_dev(event); }
